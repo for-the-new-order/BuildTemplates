@@ -1,16 +1,8 @@
 parameters:
     - name: bot
       type: object
-      # - name: bot.image
-      #   type: string
-      # - name: bot.imageName
-      #   type: string
-      # - name: bot.sshEndpoint
-      #   type: string
-      # - name: bot.dockerRegistryEndpoint
-      #   type: string
-      # - name: bot.envFile
-      #   type: string
+    - name: buildNumber
+      type: string
 
 jobs:
     - job: ValidateParameters
@@ -36,6 +28,10 @@ jobs:
             parameters:
                 name: 'bot.envFile'
                 value: ${{ parameters.bot.envFile }}
+          - template: RequiredValue.yml
+            parameters:
+                name: 'bot.envFile'
+                value: ${{ parameters.buildNumber }}
 
     - job: Build
       condition: eq(true, false)
@@ -51,16 +47,16 @@ jobs:
             displayName: 'Build an image'
             inputs:
                 containerregistrytype: 'Container Registry'
-                dockerRegistryEndpoint: $(parameters.bot.dockerRegistryEndpoint)
-                imageName: '$(parameters.bot.image):$(Build.BuildNumber)'
+                dockerRegistryEndpoint: ${{ parameters.bot.dockerRegistryEndpoint }}
+                imageName: '${{ parameters.bot.image }}:${{ parameters.buildNumber }}'
             enabled: true
 
           - task: Docker@1
             displayName: 'Push an image'
             inputs:
                 containerregistrytype: 'Container Registry'
-                dockerRegistryEndpoint: $(parameters.bot.dockerRegistryEndpoint)
+                dockerRegistryEndpoint: ${{ parameters.bot.dockerRegistryEndpoint }}
                 command: 'Push an image'
-                imageName: '$(parameters.bot.image):$(Build.BuildNumber)'
+                imageName: '${{ parameters.bot.image }}:${{ parameters.buildNumber }}'
             enabled: true
             condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
