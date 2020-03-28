@@ -90,7 +90,7 @@ jobs:
             enabled: true
 
           - task: SSH@0
-            displayName: 'Run shell inline on remote machine'
+            displayName: 'Run Dockerized Bot (commands)'
             inputs:
                 sshEndpoint: ${{ parameters.bot.sshEndpoint }}
                 commands: |
@@ -105,9 +105,9 @@ jobs:
 
                     # Cleanup
                     docker system prune -f -a
-            enabled: false
+            enabled: true
           - task: SSH@0
-            displayName: 'Run Dockerized Bot'
+            displayName: 'Run Dockerized Bot (inline)'
             inputs:
                 sshEndpoint: ${{ parameters.bot.sshEndpoint }}
                 runOptions: inline
@@ -123,4 +123,4 @@ jobs:
 
                     # Cleanup
                     docker system prune -f -a
-            enabled: true
+            enabled: false
