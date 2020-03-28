@@ -30,7 +30,7 @@ jobs:
                 value: ${{ parameters.bot.envFile }}
           - template: RequiredValue.yml
             parameters:
-                name: 'bot.envFile'
+                name: 'buildNumber'
                 value: ${{ parameters.buildNumber }}
 
     - job: Build
