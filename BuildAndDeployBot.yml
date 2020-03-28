@@ -101,7 +101,7 @@ jobs:
                     docker ps | grep ${{ parameters.bot.imageName }} && docker kill ${{ parameters.bot.imageName }} && docker rm ${{ parameters.bot.imageName }} || echo "No container named ${{ parameters.bot.imageName }} is running."
 
                     # Run the new image
-                    docker run --env-file ./${{ parameters.bot.envFile }} --restart=always --name ${{ parameters.bot.imageName }} -d ${{ parameters.bot.image }}:${{ parameters.buildNumber }}
+                    docker run -d --env-file ./${{ parameters.bot.envFile }} --restart=always --name ${{ parameters.bot.imageName }} ${{ parameters.bot.image }}:${{ parameters.buildNumber }}
 
                     # Cleanup
                     docker system prune -f -a
