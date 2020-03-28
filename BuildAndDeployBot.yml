@@ -63,10 +63,9 @@ jobs:
             condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
 
     - job: Deploy
-      condition: eq(true, false)
       displayName: Deploy Container
       dependsOn: Build
-      condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+      condition: and(eq(true, false), and(succeeded(), ne(variables['Build.Reason'], 'PullRequest')))
       steps:
           - bash: |
                 PACKAGE_VERSION=$(grep '"version":' package.json | cut -d\" -f4)
