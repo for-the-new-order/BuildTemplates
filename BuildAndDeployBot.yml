@@ -17,20 +17,20 @@ jobs:
           - template: RequiredValue.yml
             parameters:
                 name: 'bot.image'
-                value: parameters.bot.image
+                value: ${{ parameters.bot.image }}
           - template: RequiredValue.yml
             parameters:
                 name: 'bot.imageName'
-                value: parameters.bot.imageName
+                value: ${{ parameters.bot.imageName }}
           - template: RequiredValue.yml
             parameters:
                 name: 'bot.sshEndpoint'
-                value: parameters.bot.sshEndpoint
+                value: ${{ parameters.bot.sshEndpoint }}
           - template: RequiredValue.yml
             parameters:
                 name: 'bot.dockerRegistryEndpoint'
-                value: parameters.bot.dockerRegistryEndpoint
+                value: ${{ parameters.bot.dockerRegistryEndpoint }}
           - template: RequiredValue.yml
             parameters:
                 name: 'bot.envFile'
-                value: parameters.bot.envFile
+                value: ${{ parameters.bot.envFile }}
