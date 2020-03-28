@@ -1,14 +1,16 @@
 parameters:
-    - name: bot.image
-      type: string
-    - name: bot.imageName
-      type: string
-    - name: bot.sshEndpoint
-      type: string
-    - name: bot.dockerRegistryEndpoint
-      type: string
-    - name: bot.envFile
-      type: string
+    - name: bot
+      type: object
+      # - name: bot.image
+      #   type: string
+      # - name: bot.imageName
+      #   type: string
+      # - name: bot.sshEndpoint
+      #   type: string
+      # - name: bot.dockerRegistryEndpoint
+      #   type: string
+      # - name: bot.envFile
+      #   type: string
 
 jobs:
     - job: ValidateParameters
