@@ -1,0 +1,16 @@
+parameters:
+    - name: name
+      type: string
+    - name: value
+      type: string
+
+steps:
+    - bash: |
+          if [ -z "$VALUE" ]; then
+              echo "##vso[task.logissue type=error;]Missing template parameter \"$NAME\""
+              echo "##vso[task.complete result=Failed;]"
+          fi
+      env:
+          NAME: ${{ parameters.name }}
+          VALUE: ${{ parameters.value }}
+      displayName: Check for required parameters

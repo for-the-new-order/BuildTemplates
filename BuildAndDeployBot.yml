@@ -1,0 +1,111 @@
+parameters:
+    - name: bot.image
+      type: string
+    - name: bot.imageName
+      type: string
+    - name: bot.sshEndpoint
+      type: string
+    - name: bot.dockerRegistryEndpoint
+      type: string
+    - name: bot.envFile
+      type: string
+
+jobs:
+    - job: ValidateParameters
+      displayName: Validate parameters
+      steps:
+          - template: RequiredValue.yml
+            parameters:
+                name: 'bot.image'
+                value: parameters.bot.image
+          - template: RequiredValue.yml
+            parameters:
+                name: 'bot.imageName'
+                value: parameters.bot.imageName
+          - template: RequiredValue.yml
+            parameters:
+                name: 'bot.sshEndpoint'
+                value: parameters.bot.sshEndpoint
+          - template: RequiredValue.yml
+            parameters:
+                name: 'bot.dockerRegistryEndpoint'
+                value: parameters.bot.dockerRegistryEndpoint
+          - template: RequiredValue.yml
+            parameters:
+                name: 'bot.envFile'
+                value: parameters.bot.envFile
+    - job: Build
+      enabled: false
+      displayName: Build Image
+      dependsOn: ValidateParameters
+      steps:
+          - bash: |
+                PACKAGE_VERSION=$(grep '"version":' package.json | cut -d\" -f4)
+                echo "##vso[build.updatebuildnumber]$PACKAGE_VERSION"
+            displayName: 'Update Build Number'
+
+          - task: Docker@1
+            displayName: 'Build an image'
+            inputs:
+                containerregistrytype: 'Container Registry'
+                dockerRegistryEndpoint: $(parameters.bot.dockerRegistryEndpoint)
+                imageName: '$(parameters.bot.image):$(Build.BuildNumber)'
+            enabled: true
+
+          - task: Docker@1
+            displayName: 'Push an image'
+            inputs:
+                containerregistrytype: 'Container Registry'
+                dockerRegistryEndpoint: $(parameters.bot.dockerRegistryEndpoint)
+                command: 'Push an image'
+                imageName: '$(parameters.bot.image):$(Build.BuildNumber)'
+            enabled: true
+            condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+
+    - job: Deploy
+      enabled: false
+      displayName: Deploy Container
+      dependsOn: Build
+      condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+      steps:
+          - bash: |
+                PACKAGE_VERSION=$(grep '"version":' package.json | cut -d\" -f4)
+                echo "##vso[build.updatebuildnumber]$PACKAGE_VERSION"
+            displayName: 'Update Build Number'
+
+          - task: DownloadSecureFile@1
+            name: environment
+            displayName: 'Download secure file'
+            inputs:
+                secureFile: $(parameters.bot.envFile)
+
+          - bash: 'cp $(environment.secureFilePath) $(Build.SourcesDirectory)/$(parameters.bot.envFile)'
+            displayName: 'Bash Script'
+            enabled: true
+
+          - task: CopyFilesOverSSH@0
+            displayName: 'Securely copy files to the remote machine'
+            inputs:
+                sshEndpoint: $(parameters.bot.sshEndpoint)
+                sourceFolder: '$(Build.SourcesDirectory)'
+                contents: $(parameters.bot.envFile)
+                failOnEmptySource: true
+            enabled: true
+
+          - task: SSH@0
+            displayName: 'Run shell inline on remote machine'
+            inputs:
+                sshEndpoint: $(parameters.bot.sshEndpoint)
+                commands: |
+                    # Pull the new image
+                    docker pull $(parameters.bot.image):$(Build.BuildNumber)
+
+                    # Kill/Remove the running container
+                    docker ps | grep $(parameters.bot.imageName) && docker kill $(parameters.bot.imageName) && docker rm $(parameters.bot.imageName) || echo "No container named $(parameters.bot.imageName) is running."
+
+                    # Run the new image
+                    docker run --env-file ./$(parameters.bot.envFile) --restart=always --name $(parameters.bot.imageName) -d $(parameters.bot.image):$(Build.BuildNumber)
+
+                    # Cleanup
+                    docker system prune -f -a
+            enabled: true
