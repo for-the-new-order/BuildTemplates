@@ -36,3 +36,31 @@ jobs:
             parameters:
                 name: 'bot.envFile'
                 value: ${{ parameters.bot.envFile }}
+
+    - job: Build
+      condition: eq(true, false)
+      displayName: Build Image
+      dependsOn: ValidateParameters
+      steps:
+          - bash: |
+                PACKAGE_VERSION=$(grep '"version":' package.json | cut -d\" -f4)
+                echo "##vso[build.updatebuildnumber]$PACKAGE_VERSION"
+            displayName: 'Update Build Number'
+
+          - task: Docker@1
+            displayName: 'Build an image'
+            inputs:
+                containerregistrytype: 'Container Registry'
+                dockerRegistryEndpoint: $(parameters.bot.dockerRegistryEndpoint)
+                imageName: '$(parameters.bot.image):$(Build.BuildNumber)'
+            enabled: true
+
+          - task: Docker@1
+            displayName: 'Push an image'
+            inputs:
+                containerregistrytype: 'Container Registry'
+                dockerRegistryEndpoint: $(parameters.bot.dockerRegistryEndpoint)
+                command: 'Push an image'
+                imageName: '$(parameters.bot.image):$(Build.BuildNumber)'
+            enabled: true
+            condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
