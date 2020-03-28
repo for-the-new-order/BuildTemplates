@@ -34,7 +34,6 @@ jobs:
                 value: ${{ parameters.buildNumber }}
 
     - job: Build
-      condition: eq(true, false)
       displayName: Build Image
       dependsOn: ValidateParameters
       steps:
