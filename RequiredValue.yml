@@ -13,4 +13,4 @@ steps:
       env:
           NAME: ${{ parameters.name }}
           VALUE: ${{ parameters.value }}
-      displayName: Check for required parameters
+      displayName: Check for required parameter ${{ parameters.name }}
