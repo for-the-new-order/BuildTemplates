@@ -35,7 +35,7 @@ jobs:
                 name: 'bot.envFile'
                 value: parameters.bot.envFile
     - job: Build
-      enabled: false
+      condition: eq(true, false)
       displayName: Build Image
       dependsOn: ValidateParameters
       steps:
@@ -63,7 +63,7 @@ jobs:
             condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
 
     - job: Deploy
-      enabled: false
+      condition: eq(true, false)
       displayName: Deploy Container
       dependsOn: Build
       condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
