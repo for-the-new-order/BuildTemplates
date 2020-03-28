@@ -105,4 +105,22 @@ jobs:
 
                     # Cleanup
                     docker system prune -f -a
+            enabled: false
+          - task: SSH@0
+            displayName: 'Run Dockerized Bot'
+            inputs:
+                sshEndpoint: ${{ parameters.bot.sshEndpoint }}
+                runOptions: inline
+                inline: |
+                    # Pull the new image
+                    docker pull ${{ parameters.bot.image }}:${{ parameters.buildNumber }}
+
+                    # Kill/Remove the running container
+                    docker ps | grep ${{ parameters.bot.imageName }} && docker kill ${{ parameters.bot.imageName }} && docker rm ${{ parameters.bot.imageName }} || echo "No container named ${{ parameters.bot.imageName }} is running."
+
+                    # Run the new image
+                    docker run -d --env-file ./${{ parameters.bot.envFile }} --restart=always --name ${{ parameters.bot.imageName }} ${{ parameters.bot.image }}:${{ parameters.buildNumber }}
+
+                    # Cleanup
+                    docker system prune -f -a
             enabled: true
